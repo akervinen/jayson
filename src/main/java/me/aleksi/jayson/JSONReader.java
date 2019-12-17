@@ -1,6 +1,7 @@
 package me.aleksi.jayson;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.function.Function;
@@ -110,7 +111,7 @@ public class JSONReader {
      * @throws JSONParseException if an error happens while parsing
      */
     public JSONValue<?> parse(byte[] jsonBytes) throws JSONParseException {
-        return parse(new String(jsonBytes));
+        return parse(new String(jsonBytes, StandardCharsets.UTF_8));
     }
 
     /**
