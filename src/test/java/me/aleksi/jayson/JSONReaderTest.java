@@ -160,6 +160,11 @@ class JSONReaderTest {
             () -> new JSONReader().parse("-"),
             "negative sign with no number should throw");
 
+
+        assertThrows(JSONParseException.class,
+            () -> new JSONReader().parse("01"),
+            "number with leading zero should throw");
+
         assertEquals(-5,
             new JSONReader().parse("-5").getNumber().intValue(),
             "negative integer reading");
@@ -168,8 +173,10 @@ class JSONReaderTest {
             new JSONReader().parse("1234567890").getNumber().longValue(),
             "longish integer reading");
 
+        var opts = new JSONReader.ReadOptions();
+        opts.readNumbersAsBigDecimal = true;
         assertEquals(1234567890123456789L,
-            new JSONReader().parse("1234567890123456789").getNumber().longValue(),
+            new JSONReader(opts).parse("1234567890123456789").getNumber().longValue(),
             "very long integer reading");
     }
 
@@ -179,9 +186,9 @@ class JSONReaderTest {
             new JSONReader().parse("1.0").getNumber().doubleValue(),
             "short float");
 
-//        assertThrows(JSONParseException.class,
-//                () -> new JSONReader().parse("1."),
-//                "float with decimal separator but no decimals should throw");
+        assertThrows(JSONParseException.class,
+            () -> new JSONReader().parse("1."),
+            "float with decimal separator but no decimals should throw");
 
         assertEquals(-1.23456,
             new JSONReader().parse("-1.23456").getNumber().doubleValue(),
@@ -191,8 +198,10 @@ class JSONReaderTest {
             new JSONReader().parse("3.141592653589793238").getNumber().doubleValue(),
             "too long float");
 
+        var opts = new JSONReader.ReadOptions();
+        opts.readNumbersAsBigDecimal = true;
         assertEquals(new BigDecimal("3.141592653589793238"),
-            new JSONReader().parse("3.141592653589793238").getNumber(),
+            new JSONReader(opts).parse("3.141592653589793238").getNumber(),
             "very long decimal");
     }
 
@@ -206,25 +215,25 @@ class JSONReaderTest {
             new JSONReader().parse("100E100").getNumber().doubleValue(),
             "upper-case exponent sign should work");
 
-//        assertThrows(Exception.class,
-//                () -> new JSONReader().parse("1e"),
-//                "exponent sign without digits should throw");
+        assertThrows(Exception.class,
+            () -> new JSONReader().parse("1e"),
+            "exponent sign without digits should throw");
 
         assertEquals(100e100,
             new JSONReader().parse("100e100").getNumber().doubleValue(),
             "normal exponent");
 
-//        assertEquals(1.234e100,
-//                new JSONReader().parse("1.234E100").getNumber().doubleValue(),
-//                "decimal with exponent");
-//
-//        assertEquals(1.234e100,
-//                new JSONReader().parse("1.234E+100").getNumber().doubleValue(),
-//                "exponent sign with positive sign should work");
-//
-//        assertEquals(1.234e100,
-//                new JSONReader().parse("1.234E-100").getNumber().doubleValue(),
-//                "exponent sign with negative sign should work");
+        assertEquals(1.234e100,
+            new JSONReader().parse("1.234E100").getNumber().doubleValue(),
+            "decimal with exponent");
+
+        assertEquals(1.234e100,
+            new JSONReader().parse("1.234E+100").getNumber().doubleValue(),
+            "exponent sign with positive sign should work");
+
+        assertEquals(1.234e-100,
+            new JSONReader().parse("1.234E-100").getNumber().doubleValue(),
+            "exponent sign with negative sign should work");
     }
 
     @Test

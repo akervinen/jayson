@@ -1,11 +1,10 @@
 package me.aleksi.jayson;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * <p>JSONReader class.</p>
@@ -14,6 +13,7 @@ import java.util.function.Function;
  * @version 1.0-SNAPSHOT
  */
 public class JSONReader {
+    private static final Pattern jsonNumberPattern = Pattern.compile("(-?)(0|[1-9]\\d*)(\\.\\d+)?([eE][+-]?\\d+)?");
     private ReadOptions options = new ReadOptions();
     private String jsonString;
     private int jsonLength;
@@ -78,7 +78,7 @@ public class JSONReader {
      * @return the root object as {@link JSONValue}
      * @throws JSONParseException if an error happens while parsing
      */
-    public JSONValue<?> parse(String jsonString) throws JSONParseException {
+    public JSONValue<?> parse(final String jsonString) throws JSONParseException {
         this.jsonString = jsonString;
         jsonLength = jsonString.length();
         currentIndex = 0;
@@ -203,18 +203,16 @@ public class JSONReader {
     }
 
     private JSONValue<?> readNumber() throws JSONParseException {
-        var valStr = readUntil(JSONReader::isBoundary).toUpperCase();
+        var valStr = readWhile(c -> c == '-' || c == '+' || c == '.' || c == 'e' || c == 'E' || (c >= '0' & c <= '9'));
 
-        var symbols = new DecimalFormatSymbols();
-        symbols.setDecimalSeparator('.');
-
-        var format = new DecimalFormat("0.0", symbols);
-        format.setParseBigDecimal(true);
-
-        try {
-            return JSONValue.from(format.parse(valStr));
-        } catch (ParseException e) {
-            throw new JSONParseException("invalid number \"" + valStr + "\"", e);
+        if (jsonNumberPattern.matcher(valStr).matches()) {
+            try {
+                return JSONValue.from(options.readNumbersAsBigDecimal ? new BigDecimal(valStr) : Double.valueOf(valStr));
+            } catch (NumberFormatException e) {
+                throw new JSONParseException("invalid number: '" + valStr + "'", e);
+            }
+        } else {
+            throw new JSONParseException("invalid number '" + valStr + "'");
         }
     }
 
@@ -274,7 +272,11 @@ public class JSONReader {
         return sb.toString();
     }
 
-    private String readUntil(Function<Character, Boolean> until) {
+    private String readWhile(final Function<Character, Boolean> whileFunc) {
+        return readUntil(c -> !whileFunc.apply(c));
+    }
+
+    private String readUntil(final Function<Character, Boolean> until) {
         var sb = new StringBuilder();
 
         while (currentIndex < jsonLength) {
@@ -290,7 +292,7 @@ public class JSONReader {
         return sb.toString();
     }
 
-    String expect(String... expectedList) throws JSONParseException {
+    String expect(final String... expectedList) throws JSONParseException {
         var exceptionMsg = "";
         if (expectedList.length == 1) {
             exceptionMsg = String.format("expected '%s', got ",
@@ -329,7 +331,7 @@ public class JSONReader {
         throw new JSONParseException(exceptionMsg + '\'' + actual + '\'');
     }
 
-    char expect(Character... expected) throws JSONParseException {
+    char expect(final Character... expected) throws JSONParseException {
         return expect(Arrays.stream(expected).map(String::valueOf).toArray(String[]::new)).charAt(0);
     }
 
@@ -339,7 +341,7 @@ public class JSONReader {
         }
     }
 
-    void expectNotEOF(String expected) throws JSONParseException {
+    void expectNotEOF(final String expected) throws JSONParseException {
         if (isEOF()) {
             throw new JSONParseException("unexpected EOF, was expecting " + expected);
         }
@@ -406,6 +408,6 @@ public class JSONReader {
     }
 
     public static class ReadOptions {
-        public boolean readNumbersAsBigDecimal = true;
+        public boolean readNumbersAsBigDecimal = false;
     }
 }
