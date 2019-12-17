@@ -20,5 +20,8 @@
  *
  * // jsonOutput =&gt; {"obj1":{"foo":"bar"}}
  * </pre>
+ *
+ * @author Aleksi Kervinen
+ * @version 1.0-SNAPSHOT
  */
 package me.aleksi.jayson;
