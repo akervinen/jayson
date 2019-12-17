@@ -43,6 +43,16 @@ public class JSONArray implements JSONStringifyable, Iterable<JSONValue<?>> {
     }
 
     /**
+     * Check if value is in array.
+     *
+     * @param value value to look for
+     * @return true if value was found
+     */
+    public boolean contains(JSONValue<?> value) {
+        return list.contains(value);
+    }
+
+    /**
      * Add a value to this array.
      *
      * <p>Prevents adding an array into itself to prevent loops.</p>
