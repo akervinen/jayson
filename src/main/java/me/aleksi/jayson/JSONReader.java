@@ -5,6 +5,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.function.Function;
 
 /**
  * <p>JSONReader class.</p>
@@ -45,6 +46,10 @@ public class JSONReader {
 
     private static boolean isControlCharacter(char c) {
         return c <= 0x1F;
+    }
+
+    private static boolean isAZ(char c) {
+        return c >= 'a' && c <= 'z';
     }
 
     private char currentChar() {
@@ -198,7 +203,7 @@ public class JSONReader {
     }
 
     private JSONValue<?> readNumber() throws JSONParseException {
-        var valStr = readUntilBoundary().toUpperCase();
+        var valStr = readUntil(JSONReader::isBoundary).toUpperCase();
 
         var symbols = new DecimalFormatSymbols();
         symbols.setDecimalSeparator('.');
@@ -214,7 +219,7 @@ public class JSONReader {
     }
 
     private JSONValue<?> readIdentifier() throws JSONParseException {
-        var valStr = readUntilBoundary();
+        var valStr = readUntil(c -> !isAZ(c));
 
         switch (valStr) {
             case "true":
@@ -269,13 +274,13 @@ public class JSONReader {
         return sb.toString();
     }
 
-    private String readUntilBoundary() {
+    private String readUntil(Function<Character, Boolean> until) {
         var sb = new StringBuilder();
 
         while (currentIndex < jsonLength) {
             char c = currentChar();
 
-            if (isBoundary(c)) {
+            if (until.apply(c)) {
                 break;
             }
             sb.append(c);
