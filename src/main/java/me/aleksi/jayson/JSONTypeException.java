@@ -1,17 +1,20 @@
 package me.aleksi.jayson;
 
 /**
- * <p>JSONTypeException class.</p>
+ * JSON type exception.
+ * <p>
+ * Thrown when trying to get a JSON value with incorrect type,
+ * e.g. using getString when actual value is a number.
  *
  * @author Aleksi Kervinen
  * @version 1.0-SNAPSHOT
  */
 public class JSONTypeException extends Exception {
     /**
-     * <p>Constructor for JSONTypeException.</p>
+     * Create a new JSONTypeException with a message using this expected and actual type.
      *
-     * @param expected a {@link me.aleksi.jayson.JSONType} object.
-     * @param actual   a {@link me.aleksi.jayson.JSONType} object.
+     * @param expected {@link me.aleksi.jayson.JSONType} that was expected
+     * @param actual   actual {@link me.aleksi.jayson.JSONType}
      */
     public JSONTypeException(JSONType expected, JSONType actual) {
         super("Error getting JSON value: expected '" + expected + "', got '" + actual + "'");

@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
- * <p>JSONReader class.</p>
+ * A low-level JSON reader (parser).
  *
  * @author Aleksi Kervinen
  * @version 1.0-SNAPSHOT
@@ -15,35 +15,83 @@ import java.util.regex.Pattern;
 public class JSONReader {
     private static final Pattern jsonNumberPattern = Pattern.compile("(-?)(0|[1-9]\\d*)(\\.\\d+)?([eE][+-]?\\d+)?");
     private ReadOptions options = new ReadOptions();
+
+    /**
+     * JSON string currently being read.
+     */
     private String jsonString;
+
+    /**
+     * Length of the current JSON string.
+     */
     private int jsonLength;
+
+    /**
+     * Current position in {@link #jsonString}.
+     */
     private int currentIndex = 0;
+
+    /**
+     * Stack of parse states to keep track of whether we currently parsing an object or array.
+     *
+     * <p>Top of the stack is the current state.</p>
+     *
+     * <p>Stack is empty if parsing the top-level value.</p>
+     */
     private Stack<State> stateStack = new Stack<>();
+
+    /**
+     * Stack of JSON objects or arrays corresponding to {@link #stateStack} so values to in right objects.
+     *
+     * <p>Top of the stack is the currently active object or array.</p>
+     *
+     * <p>Stack is empty if parsing the top-level value.</p>
+     */
     private Stack<JSONValue<?>> valueStack = new Stack<>();
 
     /**
-     * <p>Constructor for JSONReader.</p>
+     * Create a JSONReader with default {@link ReadOptions}.
      */
     public JSONReader() {
     }
 
     /**
-     * <p>Constructor for JSONReader.</p>
+     * Create a JSONReader with given {@link ReadOptions}.
      *
-     * @param options a {@link me.aleksi.jayson.JSONReader.ReadOptions} object.
+     * @param options {@link me.aleksi.jayson.JSONReader.ReadOptions} to use for reading
      */
     public JSONReader(ReadOptions options) {
         this.options = options;
     }
 
+    /**
+     * Check if given character is JSON-spec whitespace.
+     *
+     * @param c character to check
+     * @return true if whitespace according to JSON spec
+     */
     private static boolean isWhitespace(char c) {
         return c == ' ' || c == '\n' || c == '\t' || c == '\r';
     }
 
+    /**
+     * Check if given character is a control character.
+     *
+     * @param c character to check
+     * @return true if character is a control character
+     */
     private static boolean isControlCharacter(char c) {
         return c <= 0x1F;
     }
 
+    /**
+     * Check if character is between 'a' and 'z', lowercase ASCII.
+     *
+     * <p>Used for identifier reading (true, false, null).</p>
+     *
+     * @param c character to check
+     * @return true if character is 'a'..'z'
+     */
     private static boolean isAZ(char c) {
         return c >= 'a' && c <= 'z';
     }
@@ -102,6 +150,12 @@ public class JSONReader {
         return root;
     }
 
+    /**
+     * Read any JSON value at current position.
+     *
+     * @return the root object as a {@link JSONValue}
+     * @throws JSONParseException if an error happens while parsing
+     */
     private JSONValue<?> readValue() throws JSONParseException {
         skipWhitespace();
         expectNotEOF("JSON value");
@@ -130,6 +184,13 @@ public class JSONReader {
         }
     }
 
+    /**
+     * Read key-value pairs of the current object.
+     *
+     * <p>Expects object's opening brace to have been parsed already (i.e. position = opening brace + 1).</p>
+     *
+     * @throws JSONParseException if an error happens while parsing
+     */
     private void readObjectKeys() throws JSONParseException {
         assert (stateStack.peek() == State.IN_OBJECT);
         var currentObject = (JSONObject) valueStack.peek().getValue();
@@ -165,6 +226,13 @@ public class JSONReader {
         currentObject.put(key, value);
     }
 
+    /**
+     * Read elements of the current array.
+     *
+     * <p>Expects arrays opening bracket to have been parsed already (i.e. position = opening bracket + 1).</p>
+     *
+     * @throws JSONParseException if an error happens while parsing
+     */
     private void readArrayElements() throws JSONParseException {
         assert (stateStack.peek() == State.IN_ARRAY);
         var currentArray = (JSONArray) valueStack.peek().getValue();
@@ -198,6 +266,14 @@ public class JSONReader {
         currentArray.add(readValue());
     }
 
+    /**
+     * Read a number from {@link #jsonString}.
+     *
+     * <p>Doesn't actually do parsing itself, just validates the current number-ish string
+     * with a regex pattern and passes it to {@link BigDecimal} or {@link Double#valueOf(String)}.</p>
+     *
+     * @throws JSONParseException if an error happens while parsing
+     */
     private JSONValue<?> readNumber() throws JSONParseException {
         var valStr = readWhile(c -> c == '-' || c == '+' || c == '.' || c == 'e' || c == 'E' || (c >= '0' & c <= '9'));
 
@@ -212,7 +288,14 @@ public class JSONReader {
         }
     }
 
+    /**
+     * Read an identifier consisting of ASCII a-z characters.
+     *
+     * @return {@link JSONValue} of boolean or null type
+     * @throws JSONParseException if an error happens while parsing
+     */
     private JSONValue<?> readIdentifier() throws JSONParseException {
+        skipWhitespace();
         var valStr = readUntil(c -> !isAZ(c));
 
         switch (valStr) {
@@ -268,17 +351,29 @@ public class JSONReader {
         return sb.toString();
     }
 
+    /**
+     * Read forward in {@link #jsonString} until given function returns false.
+     *
+     * @param whileFunc function that takes a character and returns boolean
+     * @return the read string
+     */
     private String readWhile(final Function<Character, Boolean> whileFunc) {
         return readUntil(c -> !whileFunc.apply(c));
     }
 
-    private String readUntil(final Function<Character, Boolean> until) {
+    /**
+     * Read forward in {@link #jsonString} until given function returns true.
+     *
+     * @param untilFunc function that takes a character and returns boolean
+     * @return the read string
+     */
+    private String readUntil(final Function<Character, Boolean> untilFunc) {
         var sb = new StringBuilder();
 
         while (currentIndex < jsonLength) {
             char c = currentChar();
 
-            if (until.apply(c)) {
+            if (untilFunc.apply(c)) {
                 break;
             }
             sb.append(c);
@@ -288,7 +383,16 @@ public class JSONReader {
         return sb.toString();
     }
 
-    String expect(final String... expectedList) throws JSONParseException {
+    /**
+     * Expect one of the given strings to be in {@link #jsonString} at current position.
+     *
+     * <p>If one of the strings was not found, throws an exception.</p>
+     *
+     * @param expectedList list of strings to look for
+     * @return string that was found
+     * @throws JSONParseException if none of the given strings match
+     */
+    private String expect(final String... expectedList) throws JSONParseException {
         var exceptionMsg = "";
         if (expectedList.length == 1) {
             exceptionMsg = String.format("expected '%s', got ",
@@ -327,22 +431,34 @@ public class JSONReader {
         throw new JSONParseException(exceptionMsg + '\'' + actual + '\'');
     }
 
-    char expect(final Character... expected) throws JSONParseException {
+    /**
+     * Expect one of the given characters to be in {@link #jsonString} at current position.
+     *
+     * <p>If one of the characters was not found, throws an exception.</p>
+     *
+     * @param expected list of characters to look for
+     * @return character that was found
+     * @throws JSONParseException if none of the given characters match
+     */
+    private char expect(final Character... expected) throws JSONParseException {
         return expect(Arrays.stream(expected).map(String::valueOf).toArray(String[]::new)).charAt(0);
     }
 
-    void expectEOF() throws JSONParseException {
+    private void expectEOF() throws JSONParseException {
         if (!isEOF()) {
             throw new JSONParseException("expected EOF, got '" + currentChar() + "'");
         }
     }
 
-    void expectNotEOF(final String expected) throws JSONParseException {
+    private void expectNotEOF(final String expected) throws JSONParseException {
         if (isEOF()) {
             throw new JSONParseException("unexpected EOF, was expecting " + expected);
         }
     }
 
+    /**
+     * Skip forward in position until a non-whitespace character is found.
+     */
     private void skipWhitespace() {
         while (!isEOF() && isWhitespace(currentChar())) {
             currentIndex++;
@@ -353,6 +469,14 @@ public class JSONReader {
         return currentIndex >= jsonLength;
     }
 
+    /**
+     * Read a string escape sequence at current position.
+     *
+     * <p>Handles all JSON-specified escape sequences: {@code \" \\ \/ \b \f \n \r \t \\uXXXX}.</p>
+     *
+     * @return the escaped sequence
+     * @throws JSONParseException if an invalid sequence was found
+     */
     private char readEscapeSequence() throws JSONParseException {
         // Skip backslash
         currentIndex++;
@@ -382,6 +506,13 @@ public class JSONReader {
         throw new JSONParseException("invalid escape sequence \\" + escaped);
     }
 
+
+    /**
+     * Read a four hex digit unicode escape sequence from current position.
+     *
+     * @return the escaped unicode character
+     * @throws JSONParseException if an invalid sequence was found
+     */
     private char readUnicodeSequence() throws JSONParseException {
         if (currentIndex + 3 >= jsonLength) {
             throw new JSONParseException("expected 4-hex digit unicode sequence, got EOF");
@@ -402,7 +533,15 @@ public class JSONReader {
         IN_ARRAY
     }
 
+    /**
+     * Reading options.
+     */
     public static class ReadOptions {
+        /**
+         * Whether all numbers should be read as BigDecimal instead of Double.
+         *
+         * <p>Recommended to turn this on if preserving precision is important.</p>
+         */
         public boolean readNumbersAsBigDecimal = false;
     }
 }

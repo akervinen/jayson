@@ -10,8 +10,7 @@ interface JSONStringifyable {
     /**
      * Convert this object into a JSON-format string.
      *
-     * @param options writing options as a {@link JSONWriterOptions} object
      * @return JSON-format string
      */
-    String toJSONString(JSONWriterOptions options);
+    String toJSONString();
 }

@@ -1,7 +1,7 @@
 package me.aleksi.jayson;
 
 /**
- * <p>JSONType class.</p>
+ * JSON value type.
  *
  * @author Aleksi Kervinen
  * @version 1.0-SNAPSHOT

@@ -5,16 +5,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * <p>JSONValidator class.</p>
+ * JSON Validator to test if a .json file parses correctly.
+ * <p>
+ * Written for JSONTestSuite but could have other uses.
  *
  * @author Aleksi Kervinen
  * @version 1.0-SNAPSHOT
  */
 public class JSONValidator {
     /**
-     * <p>main.</p>
+     * Runs validator, expects {@code args[0]} to be file name.
      *
-     * @param args an array of {@link java.lang.String} objects.
+     * @param args command-line arguments
      */
     public static void main(String[] args) {
         if (args.length == 0) {

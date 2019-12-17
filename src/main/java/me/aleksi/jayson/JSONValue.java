@@ -3,7 +3,7 @@ package me.aleksi.jayson;
 import java.util.Objects;
 
 /**
- * <p>JSONValue class.</p>
+ * Represents any valid JSON value.
  *
  * @author Aleksi Kervinen
  * @version 1.0-SNAPSHOT
@@ -12,66 +12,26 @@ public class JSONValue<T> implements JSONStringifyable {
     private JSONType type;
     private T value;
 
+    /**
+     * Create a new value of given type and value.
+     *
+     * <p>Use {@link JSONValue#from} methods instead to prevent mismatched type and value.</p>
+     *
+     * @param type  which type this value is
+     * @param value value object
+     */
     private JSONValue(JSONType type, T value) {
         this.type = type;
         this.value = value;
     }
 
-    private static boolean containsControlChars(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            if (str.charAt(i) <= 0x1F) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static String escapeControlChars(String str) {
-        var sb = new StringBuilder(str);
-
-        for (int i = 0; i < sb.length(); i++) {
-            char c = sb.charAt(i);
-
-            if (c <= 0x1F) {
-                // Escape control chars
-                sb.deleteCharAt(i);
-                sb.insert(i, String.format("\\u00%02X", (int) c));
-            }
-        }
-
-        return sb.toString();
-    }
-
     /**
-     * <p>quote.</p>
+     * Create a new {@link JSONValue} from given String.
      *
-     * @param str a {@link java.lang.String} object.
-     * @return a {@link java.lang.String} object.
-     */
-    public static String quote(String str) {
-        // Common control characters have their own escape characters
-        str = str
-            .replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", "\\n")
-            .replace("\b", "\\b")
-            .replace("\r", "\\r")
-            .replace("\f", "\\f");
-
-        // Escape rest of the control characters if needed
-        if (containsControlChars(str)) {
-            str = escapeControlChars(str);
-        }
-
-        return "\"" + str + "\"";
-    }
-
-    /**
-     * <p>from.</p>
+     * <p>Strings are automatically escaped when outputting as JSON.</p>
      *
-     * @param value a {@link java.lang.String} object.
-     * @return a {@link me.aleksi.jayson.JSONValue} object.
+     * @param value String value
+     * @return {@link JSONValue} object containing given String
      */
     public static JSONValue<?> from(String value) {
         if (value == null) return new JSONValue<>(JSONType.NULL, null);
@@ -79,10 +39,10 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>from.</p>
+     * Create a new {@link JSONValue} from given Number.
      *
-     * @param value a {@link java.lang.Number} object.
-     * @return a {@link me.aleksi.jayson.JSONValue} object.
+     * @param value Number value
+     * @return {@link JSONValue} object containing given Number
      */
     public static JSONValue<?> from(Number value) {
         if (value == null) return new JSONValue<>(JSONType.NULL, null);
@@ -90,10 +50,10 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>from.</p>
+     * Create a new {@link JSONValue} from given Boolean.
      *
-     * @param value a {@link java.lang.Boolean} object.
-     * @return a {@link me.aleksi.jayson.JSONValue} object.
+     * @param value Boolean value
+     * @return {@link JSONValue} object containing given Boolean
      */
     public static JSONValue<?> from(Boolean value) {
         if (value == null) return new JSONValue<>(JSONType.NULL, null);
@@ -101,10 +61,10 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>from.</p>
+     * Create a new {@link JSONValue} from given JSONObject.
      *
-     * @param value a {@link me.aleksi.jayson.JSONObject} object.
-     * @return a {@link me.aleksi.jayson.JSONValue} object.
+     * @param value a JSONObject
+     * @return {@link JSONValue} object containing given JSONObject
      */
     public static JSONValue<?> from(JSONObject value) {
         if (value == null) return new JSONValue<>(JSONType.NULL, null);
@@ -112,10 +72,10 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>from.</p>
+     * Create a new {@link JSONValue} from given JSONArray.
      *
-     * @param value a {@link me.aleksi.jayson.JSONArray} object.
-     * @return a {@link me.aleksi.jayson.JSONValue} object.
+     * @param value a JSONArray
+     * @return {@link JSONValue} object containing given JSONArray
      */
     public static JSONValue<?> from(JSONArray value) {
         if (value == null) return new JSONValue<>(JSONType.NULL, null);
@@ -123,46 +83,30 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>Getter for the field <code>type</code>.</p>
+     * Get type of this value.
      *
-     * @return a {@link me.aleksi.jayson.JSONType} object.
+     * @return {@link me.aleksi.jayson.JSONType} of this value
      */
     public JSONType getType() {
         return type;
     }
 
     /**
-     * <p>Setter for the field <code>type</code>.</p>
+     * Get the contained value.
      *
-     * @param type a {@link me.aleksi.jayson.JSONType} object.
-     */
-    public void setType(JSONType type) {
-        this.type = type;
-    }
-
-    /**
-     * <p>Getter for the field <code>value</code>.</p>
-     *
-     * @return a T object.
+     * @return contained value
      */
     public T getValue() {
         return value;
     }
 
     /**
-     * <p>Setter for the field <code>value</code>.</p>
+     * Get the contained value as a Number.
      *
-     * @param value a T object.
-     */
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    /**
-     * <p>getNumber.</p>
+     * <p>Throws if value is not actually a Number.</p>
      *
-     * @return a {@link java.lang.Number} object.
-     * @throws me.aleksi.jayson.JSONTypeException if any.
+     * @return contained Number
+     * @throws me.aleksi.jayson.JSONTypeException if contained value is not a Number
      */
     public Number getNumber() throws JSONTypeException {
         if (type != JSONType.NUMBER && type != JSONType.NULL) {
@@ -172,10 +116,27 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>getString.</p>
+     * Get the contained value as a Boolean.
      *
-     * @return a {@link java.lang.String} object.
-     * @throws me.aleksi.jayson.JSONTypeException if any.
+     * <p>Throws if value is not actually a Boolean.</p>
+     *
+     * @return contained Boolean
+     * @throws me.aleksi.jayson.JSONTypeException if contained value is not a Boolean
+     */
+    public Boolean getBoolean() throws JSONTypeException {
+        if (type != JSONType.BOOLEAN && type != JSONType.NULL) {
+            throw new JSONTypeException(JSONType.BOOLEAN, type);
+        }
+        return (Boolean) value;
+    }
+
+    /**
+     * Get the contained value as a String.
+     *
+     * <p>Throws if value is not actually a String.</p>
+     *
+     * @return contained String
+     * @throws me.aleksi.jayson.JSONTypeException if contained value is not a String
      */
     public String getString() throws JSONTypeException {
         if (type != JSONType.STRING && type != JSONType.NULL) {
@@ -185,10 +146,12 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>getObject.</p>
+     * Get the contained value as a JSONObject.
      *
-     * @return a {@link me.aleksi.jayson.JSONObject} object.
-     * @throws me.aleksi.jayson.JSONTypeException if any.
+     * <p>Throws if value is not actually a JSONObject.</p>
+     *
+     * @return contained JSONObject
+     * @throws me.aleksi.jayson.JSONTypeException if contained value is not a JSONObject
      */
     public JSONObject getObject() throws JSONTypeException {
         if (type != JSONType.OBJECT && type != JSONType.NULL) {
@@ -198,10 +161,12 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * <p>getArray.</p>
+     * Get the contained value as a JSONArray.
      *
-     * @return a {@link me.aleksi.jayson.JSONArray} object.
-     * @throws me.aleksi.jayson.JSONTypeException if any.
+     * <p>Throws if value is not actually a JSONArray.</p>
+     *
+     * @return contained JSONArray
+     * @throws me.aleksi.jayson.JSONTypeException if contained value is not a JSONArray
      */
     public JSONArray getArray() throws JSONTypeException {
         if (type != JSONType.ARRAY && type != JSONType.NULL) {
@@ -231,25 +196,32 @@ public class JSONValue<T> implements JSONStringifyable {
     }
 
     /**
-     * {@inheritDoc}
+     * Return this value converted into a JSON string.
+     *
+     * @return JSON-converted value
      */
     @Override
     public String toString() {
-        return toJSONString(new JSONWriterOptions());
+        return toJSONString();
     }
 
     /**
-     * {@inheritDoc}
+     * Convert this object into a JSON-format string.
+     *
+     * <p>Strings are automatically escaped.</p>
+     * <p>Invalid number values like NaN or Infinite are written as '0'.</p>
+     *
+     * @return JSON-format string
      */
     @Override
-    public String toJSONString(JSONWriterOptions options) {
+    public String toJSONString() {
         switch (type) {
             case OBJECT:
-                return ((JSONObject) value).toJSONString(options);
+                return ((JSONObject) value).toJSONString();
             case ARRAY:
-                return ((JSONArray) value).toJSONString(options);
+                return ((JSONArray) value).toJSONString();
             case STRING:
-                return quote((String) value);
+                return JSONUtils.quote((String) value);
             case NULL:
                 return "null";
             case NUMBER:

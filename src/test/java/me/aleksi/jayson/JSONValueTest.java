@@ -53,12 +53,4 @@ class JSONValueTest {
     void testFromNull() {
         assertEquals("null", JSONValue.from((JSONObject) null).toString(), "null object");
     }
-
-    @Test
-    void testFromJSONObject() {
-    }
-
-    @Test
-    void testFromJSONArray() {
-    }
 }

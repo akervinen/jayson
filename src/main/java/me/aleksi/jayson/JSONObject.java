@@ -160,27 +160,34 @@ public class JSONObject implements JSONStringifyable {
     }
 
     /**
-     * {@inheritDoc}
+     * Return this object converted into a JSON string.
+     *
+     * @return JSON-converted object
      */
     @Override
     public String toString() {
-        return toJSONString(new JSONWriterOptions());
+        return toJSONString();
     }
 
     /**
-     * {@inheritDoc}
+     * Convert this object into a JSON-format string.
+     *
+     * <p>Strings are automatically escaped.</p>
+     * <p>Invalid number values like NaN or Infinite are written as '0'.</p>
+     *
+     * @return JSON-format string
      */
     @Override
-    public String toJSONString(JSONWriterOptions options) {
+    public String toJSONString() {
         var sb = new StringBuilder("{");
 
         forEach((k, v) -> {
             if (sb.length() > 1) {
                 sb.append(",");
             }
-            sb.append(JSONValue.quote(k));
+            sb.append(JSONUtils.quote(k));
             sb.append(":");
-            sb.append(v.toJSONString(options));
+            sb.append(v.toJSONString());
         });
 
         return sb.append("}").toString();

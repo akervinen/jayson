@@ -1,26 +1,28 @@
 package me.aleksi.jayson;
 
 /**
- * <p>JSONParseException class.</p>
+ * JSON Parser exception.
+ * <p>
+ * Thrown when JSONReader is unable to parse something it was given.
  *
  * @author Aleksi Kervinen
  * @version 1.0-SNAPSHOT
  */
 public class JSONParseException extends Exception {
     /**
-     * <p>Constructor for JSONParseException.</p>
+     * Create a new JSONParseException with given parse error message.
      *
-     * @param message a {@link java.lang.String} object.
+     * @param message parse error message
      */
     public JSONParseException(String message) {
         super("Error while parsing JSON: " + message);
     }
 
     /**
-     * <p>Constructor for JSONParseException.</p>
+     * Create a new JSONParseException with given parse error message and exception cause.
      *
-     * @param message a {@link java.lang.String} object.
-     * @param cause   a {@link java.lang.Throwable} object.
+     * @param message parse error message
+     * @param cause   exception that caused this JSONParseException
      */
     public JSONParseException(String message, Throwable cause) {
         super("Error while parsing JSON: " + message, cause);

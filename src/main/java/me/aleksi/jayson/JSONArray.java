@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * Represents a JSON array containing a list of any JSON values.
+ * Represents a JSON array containing an ordered list of any JSON values.
  *
  * <p>Implements {@link Iterable} but not {@link List}.
  *
@@ -30,6 +30,16 @@ public class JSONArray implements JSONStringifyable, Iterable<JSONValue<?>> {
      */
     public boolean isEmpty() {
         return list.isEmpty();
+    }
+
+    /**
+     * Returns a value from array.
+     *
+     * @param index index of value to return
+     * @return found value
+     */
+    public JSONValue<?> get(int index) {
+        return list.get(index);
     }
 
     /**
@@ -119,25 +129,32 @@ public class JSONArray implements JSONStringifyable, Iterable<JSONValue<?>> {
     }
 
     /**
-     * {@inheritDoc}
+     * Return this array converted into a JSON string.
+     *
+     * @return JSON-converted array
      */
     @Override
     public String toString() {
-        return toJSONString(new JSONWriterOptions());
+        return toJSONString();
     }
 
     /**
-     * {@inheritDoc}
+     * Convert this object into a JSON-format string.
+     *
+     * <p>Strings are automatically escaped.</p>
+     * <p>Invalid number values like NaN or Infinite are written as '0'.</p>
+     *
+     * @return JSON-format string
      */
     @Override
-    public String toJSONString(JSONWriterOptions options) {
+    public String toJSONString() {
         var sb = new StringBuilder("[");
 
         forEach((e) -> {
             if (sb.length() > 1) {
                 sb.append(",");
             }
-            sb.append(e.toJSONString(options));
+            sb.append(e.toJSONString());
         });
 
         return sb.append("]").toString();
