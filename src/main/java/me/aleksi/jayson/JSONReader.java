@@ -36,10 +36,6 @@ public class JSONReader {
         this.options = options;
     }
 
-    private static boolean isBoundary(char c) {
-        return isWhitespace(c) || c == ',' || c == '}' || c == ']' || c == ':';
-    }
-
     private static boolean isWhitespace(char c) {
         return c == ' ' || c == '\n' || c == '\t' || c == '\r';
     }
@@ -392,7 +388,6 @@ public class JSONReader {
         }
 
         var hexStr = jsonString.substring(currentIndex, currentIndex + 4);
-        char result;
         try {
             var res = (char) Integer.parseInt(hexStr, 16);
             currentIndex += 4;
