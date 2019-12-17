@@ -286,12 +286,12 @@ public class JSONReader {
     }
 
     String expect(String... expectedList) throws JSONParseException {
-        var expectedStr = "";
+        var exceptionMsg = "";
         if (expectedList.length == 1) {
-            expectedStr = String.format("expected '%s', got ",
+            exceptionMsg = String.format("expected '%s', got ",
                 expectedList[0]);
         } else {
-            expectedStr = String.format("expected one of ['%s'], got ",
+            exceptionMsg = String.format("expected one of ['%s'], got ",
                 String.join("', '", expectedList));
         }
 
@@ -304,7 +304,7 @@ public class JSONReader {
             var lastIdx = currentIndex + expected.length() - 1;
 
             if (lastIdx >= jsonLength) {
-                throw new JSONParseException(expectedStr + "EOF");
+                continue;
             }
 
             actual = jsonString.substring(currentIndex, lastIdx + 1);
@@ -315,7 +315,13 @@ public class JSONReader {
             }
         }
 
-        throw new JSONParseException(expectedStr + '\'' + actual + '\'');
+        if (actual.isEmpty() && currentIndex < jsonLength) {
+            actual = jsonString.substring(currentIndex);
+        } else if (currentIndex >= jsonLength) {
+            actual = "EOF";
+        }
+
+        throw new JSONParseException(exceptionMsg + '\'' + actual + '\'');
     }
 
     char expect(Character... expected) throws JSONParseException {
