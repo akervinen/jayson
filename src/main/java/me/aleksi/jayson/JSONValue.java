@@ -9,8 +9,8 @@ import java.util.Objects;
  * @version 1.0-SNAPSHOT
  */
 public class JSONValue<T> implements JSONStringifyable {
-    private JSONType type;
-    private T value;
+    private final JSONType type;
+    private final T value;
 
     /**
      * Create a new value of given type and value.

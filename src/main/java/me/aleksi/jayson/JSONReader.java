@@ -39,7 +39,7 @@ public class JSONReader {
      *
      * <p>Stack is empty if parsing the top-level value.</p>
      */
-    private Stack<State> stateStack = new Stack<>();
+    private final Stack<State> stateStack = new Stack<>();
 
     /**
      * Stack of JSON objects or arrays corresponding to {@link #stateStack} so values to in right objects.
@@ -48,7 +48,7 @@ public class JSONReader {
      *
      * <p>Stack is empty if parsing the top-level value.</p>
      */
-    private Stack<JSONValue<?>> valueStack = new Stack<>();
+    private final Stack<JSONValue<?>> valueStack = new Stack<>();
 
     /**
      * Create a JSONReader with default {@link ReadOptions}.

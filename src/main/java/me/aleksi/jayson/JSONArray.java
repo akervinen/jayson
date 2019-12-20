@@ -12,7 +12,7 @@ import java.util.function.Consumer;
  * @version 1.0-SNAPSHOT
  */
 public class JSONArray implements JSONStringifyable, Iterable<JSONValue<?>> {
-    private List<JSONValue<?>> list = new LinkedList<>();
+    private final List<JSONValue<?>> list = new LinkedList<>();
 
     /**
      * Returns size of this array.

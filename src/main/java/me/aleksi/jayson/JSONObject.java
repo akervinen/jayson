@@ -16,7 +16,7 @@ public class JSONObject implements JSONStringifyable {
      * Constant <code>NULL</code> to represent a JSON null value conveniently.
      */
     public static final JSONObject NULL = null;
-    private Map<String, JSONValue<?>> kvPairs = new LinkedHashMap<>();
+    private final Map<String, JSONValue<?>> kvPairs = new LinkedHashMap<>();
 
     /**
      * Returns size of this object, i.e. how-many key-value pairs it contains.
