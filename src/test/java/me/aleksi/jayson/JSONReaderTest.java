@@ -3,7 +3,6 @@ package me.aleksi.jayson;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -250,7 +249,6 @@ class JSONReaderTest {
             new JSONReader().parse("\"€\uD834\uDD1E\"").getString(),
             "string with unicode characters");
 
-        System.out.println(Arrays.toString(new JSONReader().parse(new String(new char[]{'"', '\u00E9', '"'})).getString().getBytes()));
         assertEquals("\u00E9",
             new JSONReader().parse(new String(new char[]{'"', '\u00E9', '"'})).getString(),
             "string with latin-1 encoded character");
@@ -331,41 +329,4 @@ class JSONReaderTest {
         assertNull(new JSONReader().parse("null").getValue(),
             "null reading");
     }
-
-//    @Test
-//    void testExpectChar() {
-//        assertDoesNotThrow(() -> JSONReader.expect("foo", 0, 'f'),
-//                "should work with correct parameters");
-//
-//        assertThrows(Exception.class,
-//                () -> JSONReader.expect("foo", 0, 'g'),
-//                "should throw when given character isn't the current one in string");
-//
-//        assertThrows(Exception.class,
-//                () -> JSONReader.expect("foo", 3, 'o'),
-//                "should throw when current index is out of bounds");
-//    }
-//
-//    @Test
-//    void testExpectString() {
-//        assertDoesNotThrow(() -> JSONReader.expect("foo", 0, "foo"),
-//                "should work with same length matching string");
-//
-//        assertDoesNotThrow(() -> JSONReader.expect("foo", 0, "fo"),
-//                "should work with shorter matching string");
-//        assertDoesNotThrow(() -> JSONReader.expect("foo", 1, "oo"),
-//                "should work with shorter matching string");
-//
-//        assertThrows(Exception.class,
-//                () -> JSONReader.expect("foo", 0, "goo"),
-//                "should throw when expected String isn't the current one in string");
-//
-//        assertThrows(Exception.class,
-//                () -> JSONReader.expect("foo", 0, "food"),
-//                "should throw when expected String is longer than comparison");
-//
-//        assertThrows(Exception.class,
-//                () -> JSONReader.expect("foo", 1, "ood"),
-//                "should throw when expected String extends past end of string");
-//    }
 }
